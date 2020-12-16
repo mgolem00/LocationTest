@@ -94,7 +94,32 @@ public class MainActivity extends AppCompatActivity {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         geocoder = Geocoder.isPresent() ? new Geocoder(this) : null; // Create instance of Geocoder class
 
-        fusedLocationClient.getLastLocation()
+        addressView.setText("Finding your current location...");
+        // Request to find current location
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    Toast.makeText(getApplicationContext(),"ERROR! Can't get location!",Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                for (Location locationF : locationResult.getLocations()) {
+                    if (locationF != null) {
+                        writeLocationTextView(locationF);
+                    }
+                }
+            }
+        };
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+
+        // The commented code under is not used because it only searches for a cached location
+        /*fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                     @Override
                     public void onSuccess(Location location) {
@@ -130,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
                             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
                         }
                     }
-                });
+                });*/
     }
 
     private void writeLocationTextView(Location location) {
